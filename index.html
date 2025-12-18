@@ -117,6 +117,14 @@
       main{margin-left:0;}
       header h1{font-size:22px;}
     }
+    .code-category {margin-bottom:30px;}
+.category-title {
+  background:var(--d);color:white;padding:16px 24px;border-radius:12px;
+  cursor:pointer;font-size:18px;font-weight:600;transition:0.3s;
+}
+.category-title:hover {background:#1e2a38;}
+.code-category .category-grid {display:none;padding:20px 0;}
+.code-category.open .category-grid {display:grid;}
   </style>
 </head>
 <body>
@@ -144,12 +152,9 @@
       <li><span onclick="showStaircase()"><i class="fas fa-stairs"></i> Staircase</span></li>
       <li><span onclick="showCrack()"><i class="fas fa-hard-hat"></i> Crack Width</span></li>
       <li><span onclick="showDevLength()"><i class="fas fa-link"></i> Dev. Length</span></li>
-      <li>
-        <span onclick="toggleSub('codes-sub')"><i class="fas fa-book"></i> IS Codes (100+)</span>
-        <ul id="codes-sub" class="submenu">
-          <li><span onclick="showCodes()">View All Codes</span></li>
-        </ul>
+    <li><span onclick="showCodalProvisions()"><i class="fas fa-globe"></i> Codal Provisions</span></li>
       </li>
+      <li><span onclick="showMixDesign()"><i class="fas fa-flask"></i> Concrete Mix Design</span></li>
       <li><span onclick="showFun()"><i class="fas fa-lightbulb"></i> Fun Facts</span></li>
       <li><span onclick="showDisclaimer()"><i class="fas fa-shield-alt"></i> Disclaimer</span></li>
     </ul>
@@ -274,74 +279,133 @@
     </div>
   </template>
 
-  <template id="disclaimer-template">
-    <div class="card"><h2>Disclaimer</h2>
-      <p style="font-size:18px;line-height:1.9;">
-        For educational and reference purposes only.<br>
-        Always verify designs with a qualified structural engineer.
-      </p>
+  <template id="mixdesign-template">
+  <div class="card">
+    <h2>Concrete Mix Design – IS 10262:2019</h2>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="mixDesignPro()">
+        <i class="fas fa-flask"></i><h3>Design Concrete Mix</h3><p>M20 to M60 • With/Without Admixture</p>
+      </div>
     </div>
-  </template>
+    <div id="mix-section"></div>
+    <div id="mix-result"></div>
+  </div>
+</template>
+
+ <template id="disclaimer-template">
+  <div class="card">
+    <h2>Disclaimer</h2>
+    <p style="font-size:18px;line-height:1.9;color:#444;">
+      This tool is provided for educational and preliminary reference purposes only.<br><br>
+      All calculations are based on simplified methods from relevant Indian Standards.<br>
+      Results are not guaranteed and should never be used for final design without thorough verification.<br><br>
+      <strong>Always consult and get approval from a qualified structural engineer for any real project.</strong>
+    </p>
+    <p style="margin-top:40px;font-size:15px;color:#777;text-align:center;">
+      Created by <strong>Kiran Joshua</strong><br>
+      Civil Engineer • 2025
+    </p>
+  </div>
+</template>
 
   <!-- ==================== FULL IS CODES ARRAY (100+ entries) ==================== -->
   <script>
-    const codes = [
+  const codeCategories = {
+    "Seismic / Earthquake Resistant Design": [
       {t:"IS 13827:1993", d:"Improving Earthquake Resistance of Earthen Buildings - Guidelines", desc:"Seismic strengthening of mud & adobe houses", l:"https://archive.org/details/gov.in.is.13827.1993"},
       {t:"IS 1893 (Part 1):2016", d:"Criteria for Earthquake Resistant Design of Structures - General Provisions", desc:"Seismic zone map, response spectrum & base shear", l:"https://law.resource.org/pub/in/bis/S03/is.1893.1.2016.pdf"},
       {t:"IS 13920:2016", d:"Ductile Design and Detailing of Reinforced Concrete Structures", desc:"Seismic detailing for beams, columns & joints", l:"https://law.resource.org/pub/in/bis/S03/is.13920.2016.pdf"},
       {t:"IS 4326:2013", d:"Earthquake Resistant Design and Construction of Buildings", desc:"General provisions for masonry & RCC buildings", l:"https://law.resource.org/pub/in/bis/S03/is.4326.2013.pdf"},
       {t:"IS 16700:2017", d:"Criteria for Structural Safety of Tall Concrete Buildings", desc:"High-rise buildings >50m height", l:"https://law.resource.org/pub/in/bis/S03/is.16700.2017.pdf"},
       {t:"IS 13935:2009", d:"Guidelines for Repair & Seismic Strengthening of Buildings", desc:"Retrofitting of existing structures", l:"https://law.resource.org/pub/in/bis/S03/is.13935.2009.pdf"},
-      {t:"IS 456:2000", d:"Plain and Reinforced Concrete - Code of Practice", desc:"The Bible of RCC design in India", l:"https://law.resource.org/pub/in/bis/S03/is.456.2000.pdf"},
-      {t:"IS 800:2007", d:"General Construction in Steel - Code of Practice", desc:"Limit State Design for steel structures", l:"https://law.resource.org/pub/in/bis/S03/is.800.2007.pdf"},
-      {t:"IS 1905:1987", d:"Structural Use of Unreinforced Masonry", desc:"Load-bearing brick & stone masonry design", l:"https://law.resource.org/pub/in/bis/S03/is.1905.1987.pdf"},
-      {t:"IS 2212:1991", d:"Code of Practice for Brickwork", desc:"Construction & quality control of brick masonry", l:"https://law.resource.org/pub/in/bis/S03/is.2212.1991.pdf"},
-      {t:"IS 1343:2012", d:"Code of Practice for Prestressed Concrete", desc:"Pre-tensioned & post-tensioned members", l:"https://law.resource.org/pub/in/bis/S03/is.1343.2012.pdf"},
-      {t:"IS 3370 (Part 1):2021", d:"Concrete Structures for Liquid Retaining - General Requirements", desc:"Water tanks & reservoirs", l:"https://law.resource.org/pub/in/bis/S03/is.3370.1.2021.pdf"},
-      {t:"IS 3370 (Part 2):2021", d:"Concrete Structures for Liquid Retaining - Reinforced Concrete", desc:"Design of tank walls & base", l:"https://law.resource.org/pub/in/bis/S03/is.3370.2.2021.pdf"},
-      {t:"IS 10262:2019", d:"Concrete Mix Proportioning - Guidelines", desc:"M20 to M80 mix design step-by-step", l:"https://law.resource.org/pub/in/bis/S03/is.10262.2019.pdf"},
-      {t:"IS 1786:2008", d:"High Yield Strength Deformed Steel Bars (TMT)", desc:"Fe415, Fe500, Fe550, Fe600 specifications", l:"https://law.resource.org/pub/in/bis/S03/is.1786.2008.pdf"},
-      {t:"IS 2062:2011", d:"Hot Rolled Medium and High Tensile Structural Steel", desc:"Steel for beams, channels & angles", l:"https://law.resource.org/pub/in/bis/S03/is.2062.2011.pdf"},
-      {t:"IS 875 (Part 1):1987", d:"Design Loads - Dead Loads", desc:"Unit weights of building materials", l:"https://archive.org/details/gov.in.is.875.org/details/gov.in.is.875.1.1987"},
+      {t:"IS 4967:1968", d:"Recommendations for Seismic Instrumentation in Structures", desc:"Strong motion accelerographs", l:"https://law.resource.org/pub/in/bis/S03/is.4967.1968.pdf"}
+    ],
+    "Loads on Structures": [
+      {t:"IS 875 (Part 1):1987", d:"Design Loads - Dead Loads", desc:"Unit weights of building materials", l:"https://archive.org/details/gov.in.is.875.1.1987"},
       {t:"IS 875 (Part 2):1987", d:"Design Loads - Imposed Loads", desc:"Live loads for homes, offices, hospitals", l:"https://archive.org/details/gov.in.is.875.2.1987"},
       {t:"IS 875 (Part 3):2015", d:"Design Loads - Wind Loads", desc:"Basic wind speed map of India", l:"https://law.resource.org/pub/in/bis/S03/is.875.3.2015.pdf"},
       {t:"IS 875 (Part 4):1987", d:"Design Loads - Snow Loads", desc:"For Himalayan & hill stations", l:"https://archive.org/details/gov.in.is.875.4.1987"},
-      {t:"IS 875 (Part 5):1987", d:"Design Loads - Special Loads & Combinations", desc:"Crane, dust, temperature effects", l:"https://archive.org/details/gov.in.is.875.5.1987"},
+      {t:"IS 875 (Part 5):1987", d:"Design Loads - Special Loads & Combinations", desc:"Crane, dust, temperature effects", l:"https://archive.org/details/gov.in.is.875.5.1987"}
+    ],
+    "Reinforced Concrete (RCC) Design": [
+      {t:"IS 456:2000", d:"Plain and Reinforced Concrete - Code of Practice", desc:"The Bible of RCC design in India", l:"https://law.resource.org/pub/in/bis/S03/is.456.2000.pdf"}
+    ],
+    "Steel Structures": [
+      {t:"IS 800:2007", d:"General Construction in Steel - Code of Practice", desc:"Limit State Design for steel structures", l:"https://law.resource.org/pub/in/bis/S03/is.800.2007.pdf"}
+    ],
+    "Masonry & Brickwork": [
+      {t:"IS 1905:1987", d:"Structural Use of Unreinforced Masonry", desc:"Load-bearing brick & stone masonry design", l:"https://law.resource.org/pub/in/bis/S03/is.1905.1987.pdf"},
+      {t:"IS 2212:1991", d:"Code of Practice for Brickwork", desc:"Construction & quality control of brick masonry", l:"https://law.resource.org/pub/in/bis/S03/is.2212.1991.pdf"}
+    ],
+    "Prestressed Concrete": [
+      {t:"IS 1343:2012", d:"Code of Practice for Prestressed Concrete", desc:"Pre-tensioned & post-tensioned members", l:"https://law.resource.org/pub/in/bis/S03/is.1343.2012.pdf"}
+    ],
+    "Liquid Retaining Structures (Water Tanks, etc.)": [
+      {t:"IS 3370 (Part 1):2021", d:"Concrete Structures for Liquid Retaining - General Requirements", desc:"Water tanks & reservoirs", l:"https://law.resource.org/pub/in/bis/S03/is.3370.1.2021.pdf"},
+      {t:"IS 3370 (Part 2):2021", d:"Concrete Structures for Liquid Retaining - Reinforced Concrete", desc:"Design of tank walls & base", l:"https://law.resource.org/pub/in/bis/S03/is.3370.2.2021.pdf"},
+      {t:"IS 14243:1995", d:"Guidelines for Water Proofing of Underground Reservoirs", desc:"UG sump & water tanks", l:"https://archive.org/details/gov.in.is.14243.1995"}
+    ],
+    "Concrete Mix Design & Materials": [
+      {t:"IS 10262:2019", d:"Concrete Mix Proportioning - Guidelines", desc:"M20 to M80 mix design step-by-step", l:"https://law.resource.org/pub/in/bis/S03/is.10262.2019.pdf"}
+    ],
+    "Steel Reinforcement & Structural Steel": [
+      {t:"IS 1786:2008", d:"High Yield Strength Deformed Steel Bars (TMT)", desc:"Fe415, Fe500, Fe550, Fe600 specifications", l:"https://law.resource.org/pub/in/bis/S03/is.1786.2008.pdf"},
+      {t:"IS 2062:2011", d:"Hot Rolled Medium and High Tensile Structural Steel", desc:"Steel for beams, channels & angles", l:"https://law.resource.org/pub/in/bis/S03/is.2062.2011.pdf"}
+    ],
+    "Soil Testing & Geotechnical": [
       {t:"IS 2720 (Part 1):1983", d:"Methods of Test for Soils - Preparation of Samples", desc:"Soil laboratory testing basics", l:"https://law.resource.org/pub/in/bis/S03/is.2720.1.1983.pdf"},
       {t:"IS 2720 (Part 4):1985", d:"Methods of Test for Soils - Grain Size Analysis", desc:"Sieve analysis & hydrometer", l:"https://law.resource.org/pub/in/bis/S03/is.2720.4.1985.pdf"},
       {t:"IS 2720 (Part 5):1985", d:"Methods of Test for Soils - Liquid & Plastic Limits", desc:"Atterberg limits determination", l:"https://law.resource.org/pub/in/bis/S03/is.2720.5.1985.pdf"},
       {t:"IS 2720 (Part 8):1983", d:"Methods of Test for Soils - Compaction Characteristics", desc:"Standard & Modified Proctor test", l:"https://law.resource.org/pub/in/bis/S03/is.2720.8.1983.pdf"},
       {t:"IS 2720 (Part 16):1987", d:"Methods of Test for Soils - CBR Test", desc:"California Bearing Ratio for pavements", l:"https://law.resource.org/pub/in/bis/S03/is.2720.16.1987.pdf"},
       {t:"IS 2720 (Part 28):1974", d:"Methods of Test for Soils - Shear Strength", desc:"Triaxial & direct shear test", l:"https://law.resource.org/pub/in/bis/S03/is.2720.28.1974.pdf"},
+      {t:"IS 1498:1970", d:"Classification and Identification of Soils", desc:"USC & IS soil classification", l:"https://law.resource.org/pub/in/bis/S03/is.1498.1970.pdf"},
+      {t:"IS 1892:2021", d:"Code of Practice for Subsurface Investigation", desc:"Borelog, SPT, plate load test", l:"https://law.resource.org/pub/in/bis/S03/is.1892.2021.pdf"}
+    ],
+    "Foundations & Piles": [
       {t:"IS 6403:1981", d:"Code of Practice for Determination of Bearing Capacity of Shallow Foundations", desc:"Safe bearing capacity calculation", l:"https://law.resource.org/pub/in/bis/S03/is.6403.1981.pdf"},
       {t:"IS 2911 (Part 1-1):2010", d:"Design and Construction of Pile Foundations - Driven Cast In-situ", desc:"Bored & driven piles", l:"https://law.resource.org/pub/in/bis/S03/is.2911.1.1.2010.pdf"},
-      {t:"IS 1077:1992", d:"Common Burnt Clay Building Bricks - Specification", desc:"Class designation & compressive strength", l:"https://law.resource.org/pub/in/bis/S03/is.1077.1992.pdf"},
-      {t:"IS 2185 (Part 3):1984", d:"Concrete Masonry Units - Autoclaved Cellular (AAC) Blocks", desc:"Lightweight aerated blocks", l:"https://law.resource.org/pub/in/bis/S03/is.2185.3.1984.pdf"},
-      {t:"IS 383:2016", d:"Coarse and Fine Aggregates for Concrete - Specification", desc:"Zone-wise sand grading", l:"https://law.resource.org/pub/in/bis/S03/is.383.2016.pdf"},
-      {t:"IS 516:1959", d:"Methods of Tests for Strength of Concrete", desc:"Cube & cylinder testing", l:"https://law.resource.org/pub/in/bis/S03/is.516.1959.pdf"},
-      {t:"IS 1199:1959", d:"Methods of Sampling and Analysis of Concrete", desc:"Slump, compaction factor test", l:"https://law.resource.org/pub/in/bis/S03/is.1199.1959.pdf"},
-      {t:"SP 16:1980", d:"Design Aids for Reinforced Concrete to IS 456", desc:"Ready-made tables for beams, slabs, columns", l:"https://law.resource.org/pub/in/bis/S03/is.sp.16.1980.pdf"},
-      {t:"SP 34:1987", d:"Handbook on Concrete Reinforcement and Detailing", desc:"Bar bending schedules & detailing", l:"https://law.resource.org/pub/in/bis/S03/is.sp.34.1987.pdf"},
-      {t:"SP 23:1982", d:"Handbook on Concrete Mixes", desc:"Mix design tables & examples", l:"https://law.resource.org/pub/in/bis/S03/is.sp.23.1982.pdf"},
-      {t:"National Building Code 2016", d:"Comprehensive Building Guidelines (NBC)", desc:"Volume 1 & 2 - Architecture, Structure, Plumbing", l:"https://archive.org/details/nationalbuilding01"},
-      {t:"IS 3025 (Part 1):1987", d:"Methods of Sampling and Test for Water & Wastewater", desc:"Water quality testing", l:"https://law.resource.org/pub/in/bis/S03/is.3025.1.1987.pdf"},
-      {t:"IS 10500:2012", d:"Drinking Water - Specification", desc:"Permissible limits for potable water", l:"https://law.resource.org/pub/in/bis/S03/is.10500.2012.pdf"},
-      {t:"IS 1172:1993", d:"Code of Basic Requirements for Water Supply & Drainage", desc:"Per capita water demand", l:"https://law.resource.org/pub/in/bis/S03/is.1172.1993.pdf"},
-      {t:"IS 73:2013", d:"Paving Bitumen - Specification", desc:"VG-10, VG-30, VG-40 grades", l:"https://law.resource.org/pub/in/bis/S03/is.73.2013.pdf"},
-      {t:"IS 1200 (Part 1):1992", d:"Method of Measurement - Earthwork", desc:"Excavation & filling quantities", l:"https://archive.org/details/gov.in.is.1200.1.1992"},
-      {t:"IS 1200 (Part 2):1974", d:"Method of Measurement - Concrete Work", desc:"Formwork, reinforcement, concreting", l:"https://archive.org/details/gov.in.is.1200.2.1974"},
-      {t:"IS 1200 (Part 5):1982", d:"Method of Measurement - Formwork", desc:"Shuttering measurement rules", l:"https://archive.org/details/gov.in.is.1200.5.1982"},
-      {t:"IS 1641:2013", d:"Code of Practice for Fire Safety of Buildings", desc:"Fire resistance requirements", l:"https://law.resource.org/pub/in/bis/S03/is.1641.2013.pdf"},
-      {t:"IS 1892:2021", d:"Code of Practice for Subsurface Investigation", desc:"Borelog, SPT, plate load test", l:"https://law.resource.org/pub/in/bis/S03/is.1892.2021.pdf"},
-      {t:"IS 1498:1970", d:"Classification and Identification of Soils", desc:"USC & IS soil classification", l:"https://law.resource.org/pub/in/bis/S03/is.1498.1970.pdf"},
       {t:"IS 2911 (Part 1-2):2010", d:"Design and Construction of Pile Foundations - Driven Precast", desc:"Precast RCC & steel piles", l:"https://law.resource.org/pub/in/bis/S03/is.2911.1.2.2010.pdf"},
       {t:"IS 2911 (Part 4):2013", d:"Design and Construction of Pile Foundations - Load Test", desc:"Static & dynamic pile testing", l:"https://law.resource.org/pub/in/bis/S03/is.2911.4.2013.pdf"},
       {t:"IS 14593:1998", d:"Bored Cast In-Situ Piles in Sandy Soils - Guidelines", desc:"Under-reamed & friction piles", l:"https://archive.org/details/gov.in.is.14593.1998"},
       {t:"IS 2974 (Part 1):1982", d:"Machine Foundations - Block Type", desc:"Foundations for reciprocating machines", l:"https://law.resource.org/pub/in/bis/S03/is.2974.1.1982.pdf"},
       {t:"IS 5249:1992", d:"Method of Test for Determination of Dynamic Properties of Soil", desc:"Cyclic triaxial & resonant column", l:"https://law.resource.org/pub/in/bis/S03/is.5249.1992.pdf"},
-      {t:"IS 4967:1968", d:"Recommendations for Seismic Instrumentation in Structures", desc:"Strong motion accelerographs", l:"https://law.resource.org/pub/in/bis/S03/is.4967.1968.pdf"},
-      {t:"IS 14243:1995", d:"Guidelines for Water Proofing of Underground Reservoirs", desc:"UG sump & water tanks", l:"https://archive.org/details/gov.in.is.14243.1995"},
-      {t:"IS 12183 (Part 1):1987", d:"Code of Practice for Plumbing in Multi-Storeyed Buildings", desc:"Internal water supply & drainage", l:"https://archive.org/details/gov.in.is.12183.1.1987"},
+      {t:"IS 13301:1992", d:"Guidelines for Vibration Isolation for Machine Foundations", desc:"Anti-vibration mounts", l:"https://law.resource.org/pub/in/bis/S03/is.13301.1992.pdf"},
+      {t:"IS 12070:1987", d:"Code of Practice for Design & Construction of Shallow Foundations on Rock", desc:"Rock socketed footings", l:"https://archive.org/details/gov.in.is.12070.1987"},
+      {t:"IS 10042:1981", d:"Code of Practice for Site Investigations for Foundation on Rock", desc:"Core drilling & RQD", l:"https://archive.org/details/gov.in.is.10042.1981"}
+    ],
+    "Building Materials (Bricks, Blocks, Aggregates)": [
+      {t:"IS 1077:1992", d:"Common Burnt Clay Building Bricks - Specification", desc:"Class designation & compressive strength", l:"https://law.resource.org/pub/in/bis/S03/is.1077.1992.pdf"},
+      {t:"IS 2185 (Part 3):1984", d:"Concrete Masonry Units - Autoclaved Cellular (AAC) Blocks", desc:"Lightweight aerated blocks", l:"https://law.resource.org/pub/in/bis/S03/is.2185.3.1984.pdf"},
+      {t:"IS 383:2016", d:"Coarse and Fine Aggregates for Concrete - Specification", desc:"Zone-wise sand grading", l:"https://law.resource.org/pub/in/bis/S03/is.383.2016.pdf"},
+      {t:"IS 4989:2006", d:"Foamed Concrete Blocks - Specification", desc:"Cellular lightweight concrete", l:"https://law.resource.org/pub/in/bis/S03/is.4989.2006.pdf"},
+      {t:"IS 2572:2005", d:"Code of Practice for Construction of Hollow Concrete Block Masonry", desc:"CLC & AAC block walls", l:"https://law.resource.org/pub/in/bis/S03/is.2572.2005.pdf"},
+      {t:"IS 6041:1985", d:"Code of Practice for Construction of Autoclaved Cellular Concrete Block Masonry", desc:"AAC block construction", l:"https://law.resource.org/pub/in/bis/S03/is.6041.1985.pdf"},
+      {t:"IS 6042:1969", d:"Specification for Lightweight Portland Cement", desc:"For AAC blocks", l:"https://law.resource.org/pub/in/bis/S03/is.6042.1969.pdf"}
+    ],
+    "Concrete Testing": [
+      {t:"IS 516:1959", d:"Methods of Tests for Strength of Concrete", desc:"Cube & cylinder testing", l:"https://law.resource.org/pub/in/bis/S03/is.516.1959.pdf"},
+      {t:"IS 1199:1959", d:"Methods of Sampling and Analysis of Concrete", desc:"Slump, compaction factor test", l:"https://law.resource.org/pub/in/bis/S03/is.1199.1959.pdf"}
+    ],
+    "Handbooks & Design Aids": [
+      {t:"SP 16:1980", d:"Design Aids for Reinforced Concrete to IS 456", desc:"Ready-made tables for beams, slabs, columns", l:"https://law.resource.org/pub/in/bis/S03/is.sp.16.1980.pdf"},
+      {t:"SP 34:1987", d:"Handbook on Concrete Reinforcement and Detailing", desc:"Bar bending schedules & detailing", l:"https://law.resource.org/pub/in/bis/S03/is.sp.34.1987.pdf"},
+      {t:"SP 23:1982", d:"Handbook on Concrete Mixes", desc:"Mix design tables & examples", l:"https://law.resource.org/pub/in/bis/S03/is.sp.23.1982.pdf"},
+      {t:"National Building Code 2016", d:"Comprehensive Building Guidelines (NBC)", desc:"Volume 1 & 2 - Architecture, Structure, Plumbing", l:"https://archive.org/details/nationalbuilding01"},
+      {t:"SP 7:2016", d:"National Building Code of India (NBC 2016)", desc:"Complete building regulations", l:"https://archive.org/details/nbc2016vol1"}
+    ],
+    "Water Supply & Plumbing": [
+      {t:"IS 3025 (Part 1):1987", d:"Methods of Sampling and Test for Water & Wastewater", desc:"Water quality testing", l:"https://law.resource.org/pub/in/bis/S03/is.3025.1.1987.pdf"},
+      {t:"IS 10500:2012", d:"Drinking Water - Specification", desc:"Permissible limits for potable water", l:"https://law.resource.org/pub/in/bis/S03/is.10500.2012.pdf"},
+      {t:"IS 1172:1993", d:"Code of Basic Requirements for Water Supply & Drainage", desc:"Per capita water demand", l:"https://law.resource.org/pub/in/bis/S03/is.1172.1993.pdf"},
+      {t:"IS 12183 (Part 1):1987", d:"Code of Practice for Plumbing in Multi-Storeyed Buildings", desc:"Internal water supply & drainage", l:"https://archive.org/details/gov.in.is.12183.1.1987"}
+    ],
+    "Special & Miscellaneous": [
+      {t:"IS 73:2013", d:"Paving Bitumen - Specification", desc:"VG-10, VG-30, VG-40 grades", l:"https://law.resource.org/pub/in/bis/S03/is.73.2013.pdf"},
+      {t:"IS 1200 (Part 1):1992", d:"Method of Measurement - Earthwork", desc:"Excavation & filling quantities", l:"https://archive.org/details/gov.in.is.1200.1.1992"},
+      {t:"IS 1200 (Part 2):1974", d:"Method of Measurement - Concrete Work", desc:"Formwork, reinforcement, concreting", l:"https://archive.org/details/gov.in.is.1200.2.1974"},
+      {t:"IS 1200 (Part 5):1982", d:"Method of Measurement - Formwork", desc:"Shuttering measurement rules", l:"https://archive.org/details/gov.in.is.1200.5.1982"},
+      {t:"IS 1641:2013", d:"Code of Practice for Fire Safety of Buildings", desc:"Fire resistance requirements", l:"https://law.resource.org/pub/in/bis/S03/is.1641.2013.pdf"},
       {t:"IS 12314:1988", d:"Code of Practice for Precast Concrete Construction", desc:"Factory-made beams, slabs, columns", l:"https://law.resource.org/pub/in/bis/S03/is.12314.1988.pdf"},
       {t:"IS 15916:2010", d:"Building Design and Construction Using Bamboo", desc:"Structural use of bamboo", l:"https://law.resource.org/pub/in/bis/S03/is.15916.2010.pdf"},
       {t:"IS 15917:2010", d:"Guidelines for Use of Bamboo in Building Construction", desc:"Joints, treatment & durability", l:"https://law.resource.org/pub/in/bis/S03/is.15917.2010.pdf"},
@@ -351,10 +415,6 @@
       {t:"IS 9013:1978", d:"Method of Making and Curing Concrete Test Specimens", desc:"Cube & beam curing", l:"https://law.resource.org/pub/in/bis/S03/is.9013.1978.pdf"},
       {t:"IS 8142:1976", d:"Specification for Timber for Use in Construction", desc:"Sal, Teak, Deodar classification", l:"https://law.resource.org/pub/in/bis/S03/is.8142.1976.pdf"},
       {t:"IS 883:1994", d:"Code of Practice for Design of Structural Timber", desc:"Working stress method for timber", l:"https://law.resource.org/pub/in/bis/S03/is.883.1994.pdf"},
-      {t:"IS 4989:2006", d:"Foamed Concrete Blocks - Specification", desc:"Cellular lightweight concrete", l:"https://law.resource.org/pub/in/bis/S03/is.4989.2006.pdf"},
-      {t:"IS 2572:2005", d:"Code of Practice for Construction of Hollow Concrete Block Masonry", desc:"CLC & AAC block walls", l:"https://law.resource.org/pub/in/bis/S03/is.2572.2005.pdf"},
-      {t:"IS 6041:1985", d:"Code of Practice for Construction of Autoclaved Cellular Concrete Block Masonry", desc:"AAC block construction", l:"https://law.resource.org/pub/in/bis/S03/is.6041.1985.pdf"},
-      {t:"IS 6042:1969", d:"Specification for Lightweight Portland Cement", desc:"For AAC blocks", l:"https://law.resource.org/pub/in/bis/S03/is.6042.1969.pdf"},
       {t:"IS 3812 (Part 1):2013", d:"Pulverized Fuel Ash (Fly Ash) for Concrete", desc:"Class F & Class C fly ash", l:"https://law.resource.org/pub/in/bis/S03/is.3812.1.2013.pdf"},
       {t:"IS 15388:2003", d:"Silica Fume - Specification", desc:"Microsilica for high-strength concrete", l:"https://law.resource.org/pub/in/bis/S03/is.15388.2003.pdf"},
       {t:"IS 2645:2003", d:"Integral Waterproofing Compounds for Cement Mortar", desc:"Liquid & powder compounds", l:"https://law.resource.org/pub/in/bis/S03/is.2645.2003.pdf"},
@@ -369,9 +429,6 @@
       {t:"IS 11233:1985", d:"Code of Practice for Design & Construction of Radar Antenna Foundations", desc:"Radar & microwave towers", l:"https://archive.org/details/gov.in.is.11233.1985"},
       {t:"IS 13094:1992", d:"Selection of Ground Improvement Techniques", desc:"Vibroflotation, stone columns", l:"https://law.resource.org/pub/in/bis/S03/is.13094.1992.pdf"},
       {t:"IS 15284 (Part 1):2003", d:"Design & Construction of Stone Columns", desc:"Vibro-replacement method", l:"https://law.resource.org/pub/in/bis/S03/is.15284.1.2003.pdf"},
-      {t:"IS 13301:1992", d:"Guidelines for Vibration Isolation for Machine Foundations", desc:"Anti-vibration mounts", l:"https://law.resource.org/pub/in/bis/S03/is.13301.1992.pdf"},
-      {t:"IS 12070:1987", d:"Code of Practice for Design & Construction of Shallow Foundations on Rock", desc:"Rock socketed footings", l:"https://archive.org/details/gov.in.is.12070.1987"},
-      {t:"IS 10042:1981", d:"Code of Practice for Site Investigations for Foundation on Rock", desc:"Core drilling & RQD", l:"https://archive.org/details/gov.in.is.10042.1981"},
       {t:"IS 9178 (Part 1):1979", d:"Criteria for Design of Steel Bins for Storage of Bulk Materials", desc:"Square & circular bins", l:"https://law.resource.org/pub/in/bis/S03/is.9178.1.1979.pdf"},
       {t:"IS 8041:1990", d:"Specification for Rapid Hardening Portland Cement", desc:"Type II cement", l:"https://law.resource.org/pub/in/bis/S03/is.8041.1990.pdf"},
       {t:"IS 12600:1989", d:"Low Heat Portland Cement - Specification", desc:"For mass concrete dams", l:"https://law.resource.org/pub/in/bis/S03/is.12600.1989.pdf"},
@@ -383,10 +440,106 @@
       {t:"IS 3466:1988", d:"Masonry Cement - Specification", desc:"For plastering & masonry", l:"https://law.resource.org/pub/in/bis/S03/is.3466.1988.pdf"},
       {t:"IS 4031 (All Parts)", d:"Methods of Physical Tests for Hydraulic Cement", desc:"Fineness, setting time, strength", l:"https://law.resource.org/pub/in/bis/S03/is.4031.1.1996.pdf"},
       {t:"IS 12269:2013", d:"Ordinary Portland Cement 53 Grade - Specification", desc:"High early strength", l:"https://law.resource.org/pub/in/bis/S03/is.12269.2013.pdf"},
-      {t:"IS 8042:2015", d:"White Portland Cement - Specification", desc:"For architectural & tile grout", l:"https://law.resource.org/pub/in/bis/S03/is.8042.2015.pdf"},
-      {t:"SP 7:2016", d:"National Building Code of India (NBC 2016)", desc:"Complete building regulations", l:"https://archive.org/details/nbc2016vol1"}
-    ];
-  </script>
+      {t:"IS 8042:2015", d:"White Portland Cement - Specification", desc:"For architectural & tile grout", l:"https://law.resource.org/pub/in/bis/S03/is.8042.2015.pdf"}
+    ]
+  };
+
+  const countries = {
+    "India": codeCategories,
+"Europe (Eurocodes)": {
+    "Basis of Structural Design": [
+      {t:"EN 1990:2002", d:"Eurocode - Basis of structural design", desc:"Fundamental principles, safety, serviceability", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1990.2002.pdf"}
+    ],
+    "Actions on Structures": [
+      {t:"EN 1991-1-1:2002", d:"Eurocode 1 - Densities, self-weight, imposed loads", desc:"Dead & live loads for buildings", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1991.1.1.2002.pdf"},
+      {t:"EN 1991-1-3:2003", d:"Eurocode 1 - Snow loads", desc:"Snow load maps & factors", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1991.1.3.2003.pdf"},
+      {t:"EN 1991-1-4:2005", d:"Eurocode 1 - Wind actions", desc:"Wind speed maps & pressure coefficients", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1991.1.4.2005.pdf"}
+    ],
+    "Concrete Structures": [
+      {t:"EN 1992-1-1:2004", d:"Eurocode 2 - Design of concrete structures - General rules", desc:"The main RCC code for Europe", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1992.1.1.2004.pdf"},
+      {t:"EN 1992-1-2:2004", d:"Eurocode 2 - Structural fire design", desc:"Fire resistance of concrete structures", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1992.1.2.2004.pdf"}
+    ],
+    "Steel Structures": [
+      {t:"EN 1993-1-1:2005", d:"Eurocode 3 - Design of steel structures - General rules", desc:"Main steel design code", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1993.1.1.2005.pdf"},
+      {t:"EN 1993-1-8:2005", d:"Eurocode 3 - Design of joints", desc:"Bolted & welded connections", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1993.1.8.2005.pdf"}
+    ],
+    "Seismic Design": [
+      {t:"EN 1998-1:2004", d:"Eurocode 8 - Design for earthquake resistance - General rules", desc:"Seismic actions & building design", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1998.1.2004.pdf"}
+    ],
+    "Geotechnical Design": [
+      {t:"EN 1997-1:2004", d:"Eurocode 7 - Geotechnical design - General rules", desc:"Foundations, retaining walls, slopes", l:"https://www.phd.eng.br/wp-content/uploads/2015/12/en.1997.1.2004.pdf"}
+    ]
+  },
+  "United States": {
+    "Building Loads": [
+      {t:"ASCE 7-22", d:"Minimum Design Loads and Associated Criteria for Buildings", desc:"Wind, seismic, snow, rain, flood loads", l:"https://sp360.asce.org/PersonifyEbusiness/Bookstore/Product-Details/productId/282597314"},
+      {t:"ASCE 7-16 (Free older version)", d:"Minimum Design Loads (2016)", desc:"Still widely used", l:"https://ascelibrary.org/doi/book/10.1061/9780784414248"} // Note: full PDF behind paywall, but summaries available
+    ],
+    "Concrete Structures": [
+      {t:"ACI 318-19", d:"Building Code Requirements for Structural Concrete", desc:"The Bible of US RCC design", l:"https://www.concrete.org/store/productdetail.aspx?ItemID=31819"},
+      {t:"ACI 318-14 (Older free version)", d:"Building Code Requirements (2014)", desc:"Commonly referenced", l:"https://www.concrete.org/Portals/0/Files/PDF/318-14_errata.pdf"} // Errata, but main often shared
+    ],
+    "Steel Structures": [
+      {t:"AISC 360-22", d:"Specification for Structural Steel Buildings", desc:"Latest LRFD/ASD steel code", l:"https://www.aisc.org/globalassets/aisc/publications/standards/a360-22-specification-and-commentary.pdf"},
+      {t:"AISC 360-16 (Free)", d:"Specification for Structural Steel Buildings", desc:"Most widely used version", l:"https://www.aisc.org/globalassets/aisc/publications/standards/a360-16-specification-and-commentary.pdf"},
+      {t:"AISC 341-22", d:"Seismic Provisions for Structural Steel Buildings", desc:"Ductile detailing for seismic", l:"https://www.aisc.org/globalassets/aisc/publications/standards/seismic-provisions-for-structural-steel-buildings-ansi-aisc-341-22.pdf"}
+    ],
+    "Masonry & Other": [
+      {t:"TMS 402/602-22", d:"Building Code Requirements and Specification for Masonry Structures", desc:"US masonry design", l:"https://masonrysociety.org/product/tms-402-602-22-building-code-requirements-and-specification-for-masonry-structures/"}
+    ]
+  },
+    "Japan": {
+      "Building Standard Law": [
+        {t:"Building Standard Law of Japan (English)", d:"Includes seismic provisions", desc:"Main Japanese building code", l:"https://iisee.kenken.go.jp/worldlist/31_Japan/31_Japan_1_Building_Code_2020.pdf"}
+      ]
+    }
+  };
+
+  function showCodalProvisions() {
+    let html = `<div class="card"><h2>Select Country / Region</h2>
+      <p style="margin-bottom:30px;font-size:17px;">Choose a country to view its structural design codes</p>
+      <div class="mode-grid">`;
+
+    Object.keys(countries).forEach(country => {
+      const flag = country === "India" ? "🇮🇳" : 
+                   country.includes("Europe") ? "🇪🇺" : 
+                   country.includes("United") ? "🇺🇸" : "🇯🇵";
+      html += `<div class="mode-card" onclick="showCountryCodes('${country}')">
+        <h3 style="font-size:48px;margin-bottom:10px;">${flag}</h3>
+        <h3>${country}</h3>
+        <p>View categorized codes</p>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+    document.getElementById('content').innerHTML = html;
+  }
+
+  function showCountryCodes(country) {
+    const codeCats = countries[country];
+    let html = `<div class="card"><h2>${country} Structural Codes</h2>
+      <button class="btn-calc" onclick="showCodalProvisions()" style="width:auto;padding:12px 24px;margin-bottom:20px;">← Back to Countries</button>`;
+
+    Object.keys(codeCats).forEach(category => {
+      const codes = codeCats[category];
+      html += `
+        <div class="code-category">
+          <h3 class="category-title" onclick="this.parentElement.classList.toggle('open')">${category} (${codes.length})</h3>
+          <div class="code-grid category-grid">`;
+      codes.forEach(c => {
+        html += `<div class="code-card">
+          <h3>${c.t}</h3>
+          <p style="font-size:15px;color:#555;line-height:1.6;">${c.d}</p>
+          <a href="${c.l}" target="_blank">Open PDF</a>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+
+    html += `</div>`;
+    document.getElementById('content').innerHTML = html;
+  }
+</script>
      <script>
     // ==================== CORE FUNCTIONS ====================
     function login(guest = false) {
@@ -398,30 +551,76 @@
     function toggleSub(id) {
       document.getElementById(id).classList.toggle('active');
     }
+function showHome() {
+  const username = document.getElementById('username').textContent;
 
-    function showHome() {
-      document.getElementById('content').innerHTML = `
-        <div class="card">
-          <h2>Welcome to CivilCode</h2>
-          <p>Select any module from the sidebar to begin designing as per Indian Standards.</p>
-        </div>`;
-    }
+  document.getElementById('content').innerHTML = `
+    <div class="card" style="text-align:center;padding:70px 40px;background:#ffffff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.12);">
+      <h2 style="font-size:38px;color:var(--d);margin-bottom:20px;font-weight:800;">
+        Welcome, ${username}
+      </h2>
+      <p style="font-size:21px;color:#555;max-width:900px;margin:0 auto 60px;line-height:1.7;">
+        CivilCode is your free, reliable companion for quick and accurate structural designs<br>
+        as per Indian Standards — built for students, juniors, and practicing engineers.
+      </p>
 
-    function showCodes() {
-      let html = `<div class="card"><h2>Indian Standard Codes (100+)</h2>
-        <p style="margin-bottom:25px;font-size:17px;">All links open official free PDFs</p>
-        <div class="code-grid">`;
-      codes.forEach(c => {
-        html += `<div class="code-card">
-          <h3>${c.t}</h3>
-          <p style="font-size:15px;color:#555;line-height:1.6;margin:10px 0;">${c.d}</p>
-          <a href="${c.l}" target="_blank">Open PDF</a>
-        </div>`;
-      });
-      html += `</div></div>`;
-      document.getElementById('content').innerHTML = html;
-    }
+      <div style="font-size:18px;color:#666;margin-bottom:60px;">
+        <strong>9 Design Modules</strong> • <strong>100+ IS Codes with direct PDFs</strong> • <strong>Global Standards Included</strong>
+      </div>
 
+      <h3 style="font-size:26px;color:var(--d);margin-bottom:30px;font-weight:600;">
+        Jump into your most-used tools
+      </h3>
+
+<div class="mode-grid" style="max-width:1200px;margin:0 auto;">
+  <div class="mode-card" onclick="showOneWay()">
+    <i class="fas fa-ruler-horizontal" style="font-size:55px;color:var(--p);margin-bottom:16px;"></i>
+    <h3>One-Way Slab Design</h3>
+    <p>Simply supported or continuous</p>
+  </div>
+  <div class="mode-card" onclick="showTwoWay()">
+    <i class="fas fa-th" style="font-size:55px;color:var(--p);margin-bottom:16px;"></i>
+    <h3>Two-Way Slab Design</h3>
+    <p>With restrained corners</p>
+  </div>
+  <div class="mode-card" onclick="showBeam()">
+    <i class="fas fa-vector-square" style="font-size:55px;color:var(--p);margin-bottom:16px;"></i>
+    <h3>Beam Design</h3>
+    <p>Singly or doubly reinforced</p>
+  </div>
+  <div class="mode-card" onclick="showColumn()">
+    <i class="fas fa-columns" style="font-size:55px;color:var(--p);margin-bottom:16px;"></i>
+    <h3>Column Design</h3>
+    <p>Axial + uniaxial bending</p>
+  </div>
+  <div class="mode-card" onclick="showWaterTank()">
+    <i class="fas fa-cube" style="font-size:55px;color:var(--p);margin-bottom:16px;"></i>
+    <h3>Water Tank Design</h3>
+    <p>Rectangular • UG/OH • IS 3370</p>
+  </div>
+  <div class="mode-card" onclick="showCodalProvisions()">
+    <i class="fas fa-book-open" style="font-size:55px;color:var(--p);margin-bottom:16px;"></i>
+    <h3>Codal Provisions</h3>
+    <p>Indian + International codes</p>
+  </div>
+  <div class="mode-card" onclick="showMixDesign()">
+    <i class="fas fa-flask" style="font-size:55px;color:var(--p);margin-bottom:16px;"></i>
+    <h3>Concrete Mix Design</h3>
+    <p>M20–M60 • IS 10262:2019</p>
+  </div>
+</div>
+      <div style="margin-top:70px;padding-top:40px;border-top:1px solid #eee;">
+        <p style="font-size:16px;color:#777;max-width:800px;margin:0 auto;line-height:1.8;">
+          All calculations follow limit state method as per relevant IS codes.<br>
+          <strong>For educational and preliminary reference only.</strong> Always verify final designs with detailed manual calculations and a qualified structural engineer.
+        </p>
+        <p style="margin-top:30px;font-size:14px;color:#999;">
+          Made with passion for civil engineering • Free forever • Version 1.0 • 2025
+        </p>
+      </div>
+    </div>
+  `;
+}
     function showFun() {
       document.getElementById('content').innerHTML = `
         <div class="card"><h2>Fun & Mind-Blowing Civil Engineering Facts</h2>
@@ -451,6 +650,129 @@
       document.getElementById('content').innerHTML = document.getElementById('oneway-template').innerHTML;
       oneWayDesign();
     }
+    function showMixDesign() {
+  document.getElementById('content').innerHTML = document.getElementById('mixdesign-template').innerHTML;
+  mixDesignPro();
+}
+
+function mixDesignPro() {
+  document.getElementById('mix-section').innerHTML = `
+    <h3 style="text-align:center;margin-bottom:20px;color:var(--p);">Concrete Mix Design (IS 10262:2019)</h3>
+    <label>Target Strength (MPa)</label>
+    <select id="grade">
+      <option value="20">M20</option>
+      <option value="25" selected>M25</option>
+      <option value="30">M30</option>
+      <option value="35">M35</option>
+      <option value="40">M40</option>
+      <option value="45">M45</option>
+      <option value="50">M50</option>
+      <option value="55">M55</option>
+      <option value="60">M60</option>
+    </select>
+
+    <label>Exposure Condition</label>
+    <select id="exposure">
+      <option value="Mild">Mild</option>
+      <option value="Moderate" selected>Moderate</option>
+      <option value="Severe">Severe</option>
+      <option value="Very Severe">Very Severe</option>
+      <option value="Extreme">Extreme</option>
+    </select>
+
+    <label>Max Aggregate Size (mm)</label>
+    <select id="agg">
+      <option value="10">10 mm</option>
+      <option value="20" selected>20 mm</option>
+      <option value="40">40 mm</option>
+    </select>
+
+    <label>Type of Aggregate</label>
+    <select id="aggtype">
+      <option value="angular" selected>Angular</option>
+      <option value="subangular">Sub-angular</option>
+      <option value="gravel">Gravel (rounded)</option>
+    </select>
+
+    <label>Workability (Slump mm)</label>
+    <input type="number" id="slump" value="100" min="25" max="200">
+
+    <label>Use Admixture?</label>
+    <select id="admix">
+      <option value="no" selected>No</option>
+      <option value="yes">Yes (Superplasticizer)</option>
+    </select>
+
+    <button class="btn-calc" onclick="calculateMix()">Design Mix</button>
+  `;
+}
+
+function calculateMix() {
+  const grade = parseFloat(document.getElementById('grade').value);
+  const exposure = document.getElementById('exposure').value;
+  const agg = parseFloat(document.getElementById('agg').value);
+  const aggtype = document.getElementById('aggtype').value;
+  const slump = parseFloat(document.getElementById('slump').value);
+  const admix = document.getElementById('admix').value === "yes";
+
+  // Target mean strength (fck + 1.65 * s)
+  const s = grade <= 20 ? 4 : 5; // standard deviation
+  const ftarget = grade + 1.65 * s;
+
+  // Water content (approx from table)
+  let w = 190; // base for 20mm
+  if (agg === 10) w += 15;
+  if (agg === 40) w -= 15;
+  if (slump > 100) w += 3 * (slump - 100) / 25;
+
+  // Cement content (min from exposure)
+  const minCement = {
+    Mild: 300,
+    Moderate: 320,
+    Severe: 340,
+    "Very Severe": 360,
+    Extreme: 380
+  }[exposure];
+
+  // w/c ratio from table (approx)
+  let wc = 0.5;
+  if (grade >= 30) wc = 0.45;
+  if (grade >= 40) wc = 0.40;
+  if (grade >= 50) wc = 0.35;
+
+  // Adjust for admixture
+  if (admix) w *= 0.8; // 20% reduction typical
+
+  let cement = Math.max(minCement, w / wc);
+  cement = Math.ceil(cement / 5) * 5;
+
+  // Volume calculation
+  const vol = 1; // 1 m³
+  const air = agg === 20 ? 0.02 : (agg === 10 ? 0.03 : 0.015);
+  const volCement = cement / (3.15 * 1000);
+  const volWater = w / 1000;
+  const volAgg = vol - volCement - volWater - air;
+
+  // FA:CA ratio approx
+  let faRatio = 0.45;
+  if (aggtype === "gravel") faRatio = 0.5;
+  const fa = volAgg * faRatio * 1.45 * 1000; // assume SG 2.6 → adjust to 1.45 for fine
+  const ca = volAgg * (1 - faRatio) * 2.7 * 1000; // SG 2.7
+
+  document.getElementById('mix-result').innerHTML = `
+    <div class="result">
+      <h3 style="text-align:center;color:#27ae60;">CONCRETE MIX DESIGN - M${grade}</h3>
+      <strong>Target Mean Strength:</strong> ${ftarget.toFixed(1)} MPa<br>
+      <strong>Water-Cement Ratio:</strong> ${(w/cement).toFixed(2)}<br>
+      <strong>Cement Content:</strong> <big style="font-size:28px;color:var(--p);">${cement} kg/m³</big><br>
+      <strong>Water:</strong> ${Math.round(w)} kg/m³<br>
+      <strong>Fine Aggregate:</strong> ${Math.round(fa)} kg/m³<br>
+      <strong>Coarse Aggregate:</strong> ${Math.round(ca)} kg/m³<br>
+      <strong>Admixture:</strong> ${admix ? "Yes (reduced water)" : "Not used"}<br><br>
+      <em>Proportions by weight: 1 : ${(fa/cement).toFixed(2)} : ${(ca/cement).toFixed(2)} (C:FA:CA)</em>
+    </div>
+  `;
+}
 
     function oneWayDesign() {
       document.getElementById('oneway-section').innerHTML = `
@@ -857,6 +1179,50 @@
     }
 
     // ==================== FULLY WORKING HAMBURGER MENU ====================
+    function showCodalProvisions() {
+  let html = `<div class="card"><h2>Select Country / Region</h2>
+    <p style="margin-bottom:30px;font-size:17px;">Choose a country to view its structural design codes</p>
+    <div class="mode-grid">`;
+
+  Object.keys(countries).forEach(country => {
+    const flag = country === "India" ? "🇮🇳" : 
+                 country.includes("Europe") ? "🇪🇺" : 
+                 country.includes("United") ? "🇺🇸" : "🇯🇵";
+    html += `<div class="mode-card" onclick="showCountryCodes('${country}')">
+      <h3 style="font-size:48px;margin-bottom:10px;">${flag}</h3>
+      <h3>${country}</h3>
+      <p>View categorized codes</p>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  document.getElementById('content').innerHTML = html;
+}
+
+function showCountryCodes(country) {
+  const codeCats = countries[country];
+  let html = `<div class="card"><h2>${country} Structural Codes</h2>
+    <button class="btn-calc" onclick="showCodalProvisions()" style="width:auto;padding:12px 24px;margin-bottom:20px;">← Back to Countries</button>`;
+
+  Object.keys(codeCats).forEach(category => {
+    const codes = codeCats[category];
+    html += `
+      <div class="code-category">
+        <h3 class="category-title" onclick="this.parentElement.classList.toggle('open')">${category} (${codes.length})</h3>
+        <div class="code-grid category-grid">`;
+    codes.forEach(c => {
+      html += `<div class="code-card">
+        <h3>${c.t}</h3>
+        <p style="font-size:15px;color:#555;line-height:1.6;">${c.d}</p>
+        <a href="${c.l}" target="_blank">Open PDF</a>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `</div>`;
+  document.getElementById('content').innerHTML = html;
+}
     document.getElementById("menu-toggle").addEventListener("click", function(e) {
       e.stopPropagation();
       const sidebar = document.getElementById("sidebar");
